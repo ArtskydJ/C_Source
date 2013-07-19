@@ -168,9 +168,8 @@ void pieceResetVars()
 	drop			= 0;
 	lockDelay		= 0;
 	floorKickUsed	= 0;
-	tetLR			= AREA_WIDTH/2-2;
-	tetUD			= AREA_HEIGHT;
-	SDL_WM_SetCaption("TETRIS | Score:0 | Joseph Dykstra", NULL);
+	tetLR			= (AREA_WIDTH/2)-2;
+	tetUD			= -2;
 	}
 
 	

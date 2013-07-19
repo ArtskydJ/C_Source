@@ -3,10 +3,13 @@
 //Written by Joseph Dykstra
 
 //FLAGS
+#define MODE	0
 //#define ONE_FLOOR_KICK
+//#define SHOW_GHOST_PIECE
+//#define SHOW_CURR_PIECE
 
 
-const char color[10][3]={
+const char color[9][3]={
 {32, 32, 32},	//Background
 {000,240,240},	//ctetI
 {000,000,240},	//ctetJ
@@ -15,8 +18,7 @@ const char color[10][3]={
 {000,240,000},	//ctetS
 {240,000,240},	//ctetT
 {240,000,000},	//ctetZ
-{000,200,000},	//Ghost Tetromino
-{32, 32, 32}	//Background
+{222,222,222}	//Text, etc.
 };
 
 #define SCR_WIDTH  480
@@ -24,9 +26,10 @@ const char color[10][3]={
 #define SCR_BPP    32
 
 #define GHOST_ALPHA 128
+#define C_TEXT		8
 
 //DIMENSIONS
-#define BLOCK_SIZE	30
+#define BLOCK_SIZE	32
 #define AREA_WIDTH	12
 #define AREA_HEIGHT	20
 
@@ -35,7 +38,7 @@ const char color[10][3]={
 #define SY      61
 #define msgX    0
 #define msgY    56
-#define previewPieces   6
+#define previewPieces   (AREA_HEIGHT/5)
 //TIMING
 #define waitGravity     5
 #define waitDisp        18

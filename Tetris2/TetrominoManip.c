@@ -93,7 +93,6 @@ void pieceCreate()
 	currentPiece=nextPiece[0];
 	for (int i=1; i<previewPieces; i++)
 		{
-		//PlayTone(1000,500);Wait(500);
 		nextPiece[i-1]=nextPiece[i];
 		}
 	nextPiece[previewPieces-1]=pieceToCreate;
@@ -105,9 +104,9 @@ void pieceSetInto(int pieceType)
 	int tempLR,tempUD;
 	for (int i=0; i<4; i++)
 		{
-		tempLR=tet[currentPiece+currentRotate][i  ]+tetLR;
-		tempUD=tet[currentPiece+currentRotate][i+4]+tetUD;
-		area[tempLR][tempUD]=pieceType+1; //tetI=0, and Empty=0, so add 1
+		tempLR = tet[currentPiece+currentRotate][i  ]+tetLR;
+		tempUD = tet[currentPiece+currentRotate][i+4]+tetUD+2; //2 upper hidden rows...
+		area[tempLR][tempUD]=(pieceType/4)+1; //tetI=0, and Empty=0, so add 1
 		}
 	}
 
@@ -121,9 +120,6 @@ if full...
 	overwrite the one below with current
 	until fully up
 do not restart at previous full
-
-
-
 */
 	int blocksInRow=0;
 	int numOfFilledLines=0;
@@ -146,7 +142,7 @@ do not restart at previous full
 				}
 			numOfFilledLines++;
 			}
-		if (blocksInRow>0 && i>=AREA_HEIGHT)		//If the row has some blocks too high...
+		if (blocksInRow>0 && i<2)					//If the row has some blocks too high...
 			{
 			alive=false;								//...then ur dead, lol.
 			}

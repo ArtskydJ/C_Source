@@ -179,29 +179,18 @@ void boardDraw(bool INallowDraw, bool INallowLog)
 		if (refresh)
 			ClearScreen();	
 		
-		int tempUD=tetUD;
-		char tempLoop=1;
-		//Ghost Piece
-		while (tempLoop)
-			{
-			if (move(dwn,tempUD)) {tempUD--;}
-			else
-				{
-				//tetUD++;
-				tempLoop=false;
-				displayTetromino(currentPiece,currentRotate,tetLR*BLOCK_SIZE,tempUD*BLOCK_SIZE,GHOST_TET);
-				}
-			}
 		
 		
 		//OUTER EDGE LINE...
 		//oh noes
 		
 		//AREA...
+		drawRect.w = BLOCK_SIZE;
+		drawRect.h = BLOCK_SIZE;
 		for (int x=0; x<AREA_WIDTH; x++)
 			if (INallowLog) printf("-");
 		if (INallowLog) printf("\n");
-		for (int y=0; y<AREA_HEIGHT; y++)
+		for (int y=2; y<AREA_HEIGHT+2; y++)
 			{
 			for (int x=0; x<AREA_WIDTH; x++)
 				{
@@ -209,7 +198,7 @@ void boardDraw(bool INallowDraw, bool INallowLog)
 				if (test>0) //Piece
 					{
 					drawRect.x = x*BLOCK_SIZE;
-					drawRect.y = y*BLOCK_SIZE;
+					drawRect.y = (y-2)*BLOCK_SIZE; //2 rows are hidden
 					SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format, color[test][0], color[test][1], color[test][2]));
 					if (INallowLog) printf("%d",test);
 					}
@@ -224,16 +213,41 @@ void boardDraw(bool INallowDraw, bool INallowLog)
 		
 		
 		//NEXT PIECES / MESSAGE
-		//oh noes
-		//check out old commented out code below...
-		
+		for (int i=0; i<previewPieces; i++)//tet,rot,x,			y,			type
+			displayTetromino(nextPiece[i], 1, AREA_WIDTH+1, (5*i), REAL_TET);
+	
 		//CURRENT TETROMINO
-		displayTetromino(currentPiece,currentRotate,tetLR*BLOCK_SIZE,tetUD*BLOCK_SIZE,REAL_TET);
+#ifdef SHOW_CURR_PIECE
+		displayTetromino(currentPiece,currentRotate,tetLR,tetUD,REAL_TET);
+#endif
+		
+#ifdef SHOW_GHOST_PIECE
+		int tempUD=tetUD;
+		char tempLoop=1;
+		//Ghost Piece
+		while (tempLoop)
+			{
+			if (move(dwn,tempUD)) {tempUD--;}
+			else
+				{
+				//tetUD++;
+				tempLoop=false;
+				displayTetromino(currentPiece,currentRotate,tetLR,tempUD,GHOST_TET);
+				}
+			}
+#endif
 		
 		//OUTER EDGE LINE
-		//oh noes
+		drawRect.x = AREA_WIDTH*BLOCK_SIZE;
+		drawRect.y = 0;
+		drawRect.w = BLOCK_SIZE/2;
+		drawRect.h = AREA_HEIGHT*BLOCK_SIZE;
+		SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format, color[C_TEXT][0], color[C_TEXT][1], color[C_TEXT][2]));
 		
 		//SCORE IN WINDOW NAME
+		char tempCaption[40];
+		sprintf(tempCaption,"TETRIS | Score:%d | Joseph Dykstra",score);
+		SDL_WM_SetCaption(tempCaption, NULL);
 		SDL_Flip(screen);
 		}
 	}

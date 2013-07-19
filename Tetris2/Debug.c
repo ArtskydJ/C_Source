@@ -51,13 +51,12 @@ void debug(int INmode)
 					area[j][i]=area[j][i]%3+1;
 				}
 			}
-		//inputOutput(false,false,0);
+		refresh=true;
 		boardDraw(true,true);
 		SDL_Delay(5000);
 		clearFullRows();
-		ClearScreen();
 		SDL_Delay(250);
-		//inputOutput(false,false,0);
+		refresh=true;
 		boardDraw(true,true);
 		SDL_Delay(5000);
 		}
@@ -80,41 +79,43 @@ void debug(int INmode)
 		{
 		pieceCreate();
 		tetUD=10;
+		
+		displayTetromino(currentPiece,currentRotate,tetLR,tetUD,REAL_TET);
+		SDL_Delay(3000);
+		
+		boardDraw(true,true);
+		SDL_Delay(3000);
+		
 		pieceSetInto(currentPiece);
-		inputOutput(false,false,0);
 		boardDraw(true,true);
 		SDL_Delay(3000);
+		
 		debugStream(0);
-		ClearScreen();
-		displayTetromino(currentPiece,currentRotate,tetLR*BLOCK_SIZE,tetUD*BLOCK_SIZE,REAL_TET);
-		SDL_Delay(500);
-		inputOutput(false,false,0);
-		boardDraw(true,true);
-		SDL_Delay(3000);
 		}
+	
 	else if (INmode==5) //peiceCreate()
 		{
-		while (1)
+		for (int i=0; i<10; i++)
 			{
 			pieceCreate();
 			ClearScreen();
-			NumOut(0,48,currentPiece,4096);
-			NumOut(0,40,nextPiece[0],4096);
-			NumOut(0,32,nextPiece[1],4096);
-			NumOut(0,24,nextPiece[2],4096);
-			SDL_Delay(400);
+			printf("c%d n%d n%d n%d\n",currentPiece/4,nextPiece[0]/4,nextPiece[1]/4,nextPiece[2]/4);
+			SDL_Delay(100);
 			}
 		}
+	
 	else if (INmode==6) //gravity
 		{
 		pieceCreate();
-		while(1)
+		pieceResetVars();
+		while(tetUD<AREA_HEIGHT)
 			{
 			ClearScreen();
-			inputOutput(false,false,0);
-			boardDraw(true,true);
+			//boardDraw(true,true);
+			displayTetromino(currentPiece,currentRotate,tetLR,tetUD,REAL_TET);
+			printf("y=%d",tetUD);
 			SDL_Delay(1000);
-			tetUD--;
+			tetUD++;
 			}
 		}
 	}
