@@ -5,6 +5,9 @@
 
 bool inputOutput(bool INallowInput, bool INallowOutput, int INwaited)
 	{
+#ifdef DEBUG_STREAM
+	printf("inputOutput - start");
+#endif
 	char temppiecemoving=true; //return this
 //INPUT
 //INPUT
@@ -12,109 +15,114 @@ bool inputOutput(bool INallowInput, bool INallowOutput, int INwaited)
 		{
 		char btnPressed=0;
 		SDL_Event test_event;
-		while(SDL_PollEvent(&test_event)) //GET INPUT
+		while (SDL_PollEvent(&test_event)) //GET INPUT
 			{
-			if (test_event.key.state == SDL_PRESSED)
-				btnPressed=test_event.key.keysym.sym;
-			}
-	
-		if (btnPressed==BTN_H_DROP)
-			{
-			lockDelay=0;
-			drop=dropWHard;
-			}
-		else if (btnPressed==BTN_S_DROP)
-			{
-			lockDelay=0;
-			drop=dropSoft;
-			prevDrp++;
-			}
-		else
-			{
-			prevDrp=0;
-			if (drop==dropWHard)
+			switch (test_event.type) //WHICH EVENT
 				{
-				drop=dropHard;
-				lockDelay=waitLock;
-				}
-			else
-				drop=0;
-			}
-		
-		if (btnPressed==BTN_ROTATE)
-			{
-			if (prevRot==0)
-				{
-				if (rotate())
-					{
-					lockDelay=0;
-					refresh=true;
-					currentRotate++;
-					if (currentRotate>=4)
-						currentRotate=0;
-					}
-				}
-			prevRot++;
-			if (prevRot>waitRotateAgain)
-				prevRot=0;
-			}
-		else
-			{
-			prevRot=0;
-			}
-		
-		if (btnPressed==BTN_MOVE_LEFT)
-			{
-			prevLft++;
-			if ((prevLft>=waitSlowMove || prevLft<0) && move(lft,tetUD))
-				{
-				lockDelay=0;
-				if (prevLft<0)
-					prevLft=0;
-				else
-					prevLft=waitSlowMove-waitFastMove;
-				tetLR++;
-				refresh=true;
-				}
-			}
-		else
-			{
-			prevLft=-5;
-			}
-		
-		if (btnPressed==BTN_MOVE_RIGHT)
-			{
-			prevRht++;
-			if ((prevRht>=waitSlowMove || prevRht<0) && move(rht,tetUD))
-				{
-				lockDelay=0;
-				if (prevRht<0)
-					prevRht=0;
-				else
-					prevRht=waitSlowMove-waitFastMove;
-				tetLR--;
-				refresh=true;
-				}
-			}
-		else
-			{
-			prevRht=-5;
-			}
+				case SDL_KEYDOWN: //IF KEY DOWN
+					switch (test_event.key.keysym.sym) //WHICH KEY
+						{
+#ifdef ARROW_KEYS							//HARD DROP
+						case SDLK_SPACE:
+#else
+						case SDLK_KP8:
+#endif
+							lockDelay=waitLock;
+							drop=dropHard;
+							break;
+#ifdef ARROW_KEYS							//SOFT DROP
+						case SDLK_DOWN:
+#else
+						case SDLK_KP2:
+#endif
+							if (lockDelay<waitLock)
+								{
+								//lockDelay=0;
+								drop=dropSoft;
+								}
+							break;
+#ifdef ARROW_KEYS							//ROTATE LEFT
+						case SDLK_z:
+#else
+						case SDLK_KP3:
+						case SDLK_KP7:
+#endif
+							if (rotate(lft) && lockDelay<waitLock)
+								{
+								lockDelay=0;
+								refresh=true;
+								}
+							break;
+#ifdef ARROW_KEYS							//ROTATE RIGHT
+						case SDLK_UP:
+						case SDLK_x:
+#else
+						case SDLK_KP1:
+						case SDLK_KP5:
+						case SDLK_KP9:
+#endif
+							if (rotate(rht) && lockDelay<waitLock)
+								{
+								lockDelay=0;
+								refresh=true;
+								}
+							break;
+#ifdef ARROW_KEYS							//MOVE LEFT
+						case SDLK_LEFT:
+#else
+						case SDLK_KP4:
+#endif
+							if (move(lft,tetUD) && lockDelay<waitLock)
+								{
+								//lockDelay=0;
+								tetLR--;
+								refresh=true;
+								}
+							break;
+#ifdef ARROW_KEYS							//MOVE RIGHT
+						case SDLK_RIGHT:
+#else
+						case SDLK_KP6:
+#endif
+							if (move(rht,tetUD) && lockDelay<waitLock)
+								{
+								//lockDelay=0;
+								tetLR++;
+								refresh=true;
+								}
+							break;
+						
+						case SDLK_p:
+							//pause...
+							break;
+						
+						case SDLK_ESCAPE:
+							exit(0);
+							break;
+						} //WHICH KEY
+					break; //IF KEY DOWN
+				
+				case SDL_QUIT: //IF EXIT
+					exit(0);
+					break; //IF EXIT
+				} //WHICH EVENT
+			} //GET INPUT
 		}
 
 //OUTPUT
 //OUTPUT
 	if (INallowOutput) //Gravity and Drop
 		{
-		if (drop==dropHard)																									 //HARD DROP
+		if (drop==dropHard)																	 //HARD DROP
 			{
 			char tempLoop=true;
 			while (tempLoop)
 				{
 				if (move(dwn,tetUD))
 					{
-					tetUD--;
+					tetUD++;
 					score+=2;
+					//lockDelay=0;
 					}
 				else
 					{
@@ -127,15 +135,20 @@ bool inputOutput(bool INallowInput, bool INallowOutput, int INwaited)
 			refresh=true;
 			drop=0;
 			}
-		if ((INwaited%waitGravity<=prevWaited%waitGravity) || drop==dropSoft) //SOFT DROP or GRAVITY
+		if (INwaited==0 || drop==dropSoft) //SOFT DROP or GRAVITY
 			{
-			if (drop==dropSoft)
-				score++;
 			refresh=true;
 			if (move(dwn,tetUD))
-				tetUD--;
+				{
+				if (drop==dropSoft)
+					score++;
+				tetUD++;
+				lockDelay=0;
+				}
 			else
+				{
 				lockDelay++;
+				}
 			if (lockDelay>=waitLock)
 				{
 				temppiecemoving=false;
@@ -144,52 +157,104 @@ bool inputOutput(bool INallowInput, bool INallowOutput, int INwaited)
 			drop=0;
 			}
 		prevWaited=INwaited;
-		if (score>readHigh(accesshigh))
+		/*if (score>readHigh(accesshigh))
 			{
 			writeHigh(accesshigh,score);
 			highMade=true;
-			}
+			}*/
 		}
+#ifdef DEBUG_STREAM
+	printf(" - moving:%s - end\n",temppiecemoving?"yes":"no");
+#endif
 	return temppiecemoving; //THIS LINE WAS ADDED LATER
 	}
 	
 	
-void displayTetromino(int INtet,int INrot, int INx, int INy, bool INreal)
+	
+	
+void drawTetromino(int INtet,int INrot, int INx, int INy, int INreal)
 	{
+#ifdef DEBUG_STREAM
+	printf("drawTet - start");
+#endif
 	for (int i=0; i<4; i++)
 		{
 		drawRect.x = (INx + tet[INtet+INrot][i  ]) * BLOCK_SIZE;
 		drawRect.y = (INy + tet[INtet+INrot][i+4]) * BLOCK_SIZE;
 		drawRect.w = BLOCK_SIZE;
 		drawRect.h = BLOCK_SIZE;
-		if (INreal==REAL_TET)			//REAL TETROMINO
-			SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format, color[INtet/4+1][0], color[INtet/4+1][1], color[INtet/4+1][2]));
-		else if (INreal==GHOST_TET)		//GHOST TETROMINO
-			SDL_FillRect(screen, &drawRect, SDL_MapRGBA(screen->format, color[INtet/4+1][0], color[INtet/4+1][1], color[INtet/4+1][2],GHOST_ALPHA));
-		SDL_Flip(screen);
-		printf("dispTet(%d,%d)\n",INtet,INrot);
+		switch(INreal)
+			{
+			case REAL_TET:				//REAL TETROMINO
+				SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format,
+					tetColors[INtet/4][0],
+					tetColors[INtet/4][1],
+					tetColors[INtet/4][2]));
+				break;
+			case GHOST_TET:				//GHOST TETROMINO
+				SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format,
+					tetColors[INtet/4+7][0],
+					tetColors[INtet/4+7][1],
+					tetColors[INtet/4+7][2]));
+				break;
+			default:
+				fprintf( stderr, "drawTetromino, bad draw type value \n");
+				SDL_Quit();
+				exit( -1 );
+				break;
+			}
+#ifdef DRAW_TET_DETAILS
+		printf("\n(%d,%d)",INtet,INrot);
+#endif
 		}
+#ifdef DEBUG_STREAM
+	printf(" - end\n");
+#endif
+	}
+
+	
+	
+
+void ClearScreen()
+	{
+#ifdef DEBUG_STREAM
+	printf(" clear");
+#endif
+	drawRect.w = SCR_WIDTH;
+	drawRect.h = SCR_HEIGHT;
+	drawRect.x = 0;
+	drawRect.y = 0;
+	SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format,
+		otherColors[C_BACK][0],
+		otherColors[C_BACK][1],
+		otherColors[C_BACK][2]));
+//	SDL_Flip(screen);
+#ifdef DEBUG_STREAM
+	printf("screen\n");
+#endif
 	}
 
 
-void boardDraw(bool INallowDraw, bool INallowLog)
+	
+	
+void drawBoard(bool INallowDraw)
 	{
+#ifdef DEBUG_STREAM
+	printf("drawBoard - start");
+#endif
 	if (INallowDraw)			//refresh the screen:
 		{
 		if (refresh)
 			ClearScreen();	
 		
-		
-		
-		//OUTER EDGE LINE...
-		//oh noes
-		
 		//AREA...
 		drawRect.w = BLOCK_SIZE;
 		drawRect.h = BLOCK_SIZE;
+#ifdef DEBUG_BOARD
 		for (int x=0; x<AREA_WIDTH; x++)
-			if (INallowLog) printf("-");
-		if (INallowLog) printf("\n");
+			printf("-");
+		printf("\n");
+#endif
 		for (int y=2; y<AREA_HEIGHT+2; y++)
 			{
 			for (int x=0; x<AREA_WIDTH; x++)
@@ -199,50 +264,73 @@ void boardDraw(bool INallowDraw, bool INallowLog)
 					{
 					drawRect.x = x*BLOCK_SIZE;
 					drawRect.y = (y-2)*BLOCK_SIZE; //2 rows are hidden
-					SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format, color[test][0], color[test][1], color[test][2]));
-					if (INallowLog) printf("%d",test);
+					SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format,
+						tetColors[test-1][0],
+						tetColors[test-1][1],
+						tetColors[test-1][2]));
+#ifndef DEBUG_BOARD
+					}
+				}
+			}
+#else
+					printf("%d",test);
 					}
 				else
-					if (INallowLog) printf(" ");
+					printf(" ");
 				}
-			if (INallowLog) printf("\n");
+			printf("\n");
 			}
 		for (int x=0; x<AREA_WIDTH; x++)
-			if (INallowLog) printf("-");
-		if (INallowLog) printf("\n\n");
-		
-		
-		//NEXT PIECES / MESSAGE
-		for (int i=0; i<previewPieces; i++)//tet,rot,x,			y,			type
-			displayTetromino(nextPiece[i], 1, AREA_WIDTH+1, (5*i), REAL_TET);
-	
-		//CURRENT TETROMINO
-#ifdef SHOW_CURR_PIECE
-		displayTetromino(currentPiece,currentRotate,tetLR,tetUD,REAL_TET);
+			printf("-");
+		printf("\n\n");
 #endif
 		
+		
+		//NEXT PIECES
+#ifdef SHOW_NEXT_PIECES
+		for (int i=0; i<PREVIEW_PIECES; i++)//tet,rot,x,			y,			type
+			drawTetromino(nextPiece[i], 2, AREA_WIDTH+1, (PREVIEW_PIECE_SPACING*i), REAL_TET); 
+#endif
+		
+		//GHOST PIECE
 #ifdef SHOW_GHOST_PIECE
 		int tempUD=tetUD;
-		char tempLoop=1;
+		bool tempLoop=true;
 		//Ghost Piece
 		while (tempLoop)
 			{
-			if (move(dwn,tempUD)) {tempUD--;}
+			if (move(dwn,tempUD))
+				{
+				tempUD++;
+				}
 			else
 				{
-				//tetUD++;
+				//tempUD++;
 				tempLoop=false;
-				displayTetromino(currentPiece,currentRotate,tetLR,tempUD,GHOST_TET);
+				drawTetromino(currentPiece,currentRotate,tetLR,tempUD,GHOST_TET);
 				}
 			}
 #endif
+	
+		//CURRENT TETROMINO
+#ifdef SHOW_CURR_PIECE
+		drawTetromino(currentPiece,currentRotate,tetLR,tetUD,REAL_TET);
+#endif
 		
-		//OUTER EDGE LINE
+		//OUTER EDGE LINES
 		drawRect.x = AREA_WIDTH*BLOCK_SIZE;
 		drawRect.y = 0;
 		drawRect.w = BLOCK_SIZE/2;
 		drawRect.h = AREA_HEIGHT*BLOCK_SIZE;
-		SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format, color[C_TEXT][0], color[C_TEXT][1], color[C_TEXT][2]));
+		SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format,
+			otherColors[C_TEXT][0],
+			otherColors[C_TEXT][1],
+			otherColors[C_TEXT][2]));
+		drawRect.x = ((float)AREA_WIDTH+5.5)*BLOCK_SIZE;
+		SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format,
+			otherColors[C_TEXT][0],
+			otherColors[C_TEXT][1],
+			otherColors[C_TEXT][2]));
 		
 		//SCORE IN WINDOW NAME
 		char tempCaption[40];
@@ -250,6 +338,9 @@ void boardDraw(bool INallowDraw, bool INallowLog)
 		SDL_WM_SetCaption(tempCaption, NULL);
 		SDL_Flip(screen);
 		}
+#ifdef DEBUG_STREAM
+	printf(" - end\n");
+#endif
 	}
 
 	
@@ -259,7 +350,7 @@ void boardDraw(bool INallowDraw, bool INallowLog)
 	
 /*
 for (int i=0; i<previewPieces; i++)//tet,rot,	x,					y
-	displayTetromino(nextPiece[i], 0, 63-4*BLOCK_SIZE, 78-(4*BLOCK_SIZE*i)+(nextPiece[i]==Otet*4)*BLOCK_SIZE,REAL_TET);
+	drawTetromino(nextPiece[i], 0, 63-4*BLOCK_SIZE, 78-(4*BLOCK_SIZE*i)+(nextPiece[i]==Otet*4)*BLOCK_SIZE,REAL_TET);
 if (showDisp>0&&disp==0)
 	{
 	TextOutput(msgX,msgY,0,0);

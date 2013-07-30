@@ -1,26 +1,60 @@
-void initReset()
+void initReset(void)
 	{
 	printf("\n");
 #ifdef DEBUG_STREAM
 	printf("initReset - start");
 #endif
+
+	atexit(quit);
 	if( SDL_Init( SDL_INIT_EVERYTHING ) < 0)
 		{
-		fprintf( stderr, "Could not initialise SDL: %s\n", SDL_GetError() );
-		exit( -1 );
+		printf("SDL_Init() bad");
+		fprintf( stderr, "Could not initialize SDL: %s\n", SDL_GetError() );
+		quit();
+		exit(-1);
 		}
-	atexit(SDL_Quit);
+	else printf("SDL_Init() good");
+
 	screen = SDL_SetVideoMode( SCR_WIDTH, SCR_HEIGHT, SCR_BPP, SDL_SWSURFACE );
 	if( !screen )
 		{
+		printf("SDL_SetVideoMode() bad");
 		fprintf( stderr, "Could not set video mode: %s\n", SDL_GetError() );
-		SDL_Quit();
-		exit( -1 );
+		exit(-1);
 		}
-	//freopen( "CON", "w", stdout );
-	//freopen( "CON", "w", stderr );
-	//Graphics
-	SDL_EnableKeyRepeat(300,20); //Defaults are 500 and 30, respectively.
+	else printf("SDL_SetVideoMode() good");
+	if( TTF_Init() == -1 )
+		{
+		printf("TTF_Init() bad");
+		fprintf( stderr, "Could not initialize TTF: %s\n", SDL_GetError() );
+		exit(-1);
+		}
+	else printf("TTF_Init() good");
+	font = TTF_OpenFont("arial.ttf", TEXT_SIZE);
+	if( font == NULL )
+		{
+		printf("TTF_OpenFont() bad");
+		exit(-1);
+		}
+	else printf("TTF_OpenFont() good");
+	
+	icon = SDL_CreateRGBSurface(SDL_SWSURFACE, 64, 64, SCR_BPP, 0, 0, 0, 255);
+	if(icon == NULL)
+		{
+		printf("SDL_CreateRGBSurface() bad");
+		fprintf(stderr, "CreateRGBSurface failed with icon: %s\n", SDL_GetError());
+		exit(1);
+		}
+	else printf("SDL_CreateRGBSurface() good");
+	
+	EZ_apply_rect(icon, EZ_new_rect(0,	0,	64,	64), otherColors[C_BACK]);
+	EZ_apply_rect(icon, EZ_new_rect(48,	8,	16,	48), otherColors[C_TEXT]);
+	EZ_apply_rect(icon, EZ_new_rect(16,	40,	16,	16), otherColors[C_TEXT]);
+	SDL_WM_SetIcon(icon,NULL);
+	
+	SDL_WM_SetCaption("Tetris | Joseph Dykstra", NULL);
+	
+	SDL_EnableKeyRepeat(150,10); //Defaults are 500 and 30, respectively.
 #ifdef DEBUG_STREAM
 	printf(" - end\n");
 #endif
@@ -38,10 +72,10 @@ void selectGame(char INfastmode)
 	score=0;
 	//disp="";
 	//accesshigh="Tet";
-	if (INfastmode) //DEBUG_STREAMging
+	if (INfastmode) //debugging
 		{
-		gamespeed=0;
-		gametype=0;
+		gamespeed=0;	//0=slow
+		gametype=2;		//2=normal
 		}
 	else
 		{
@@ -53,17 +87,17 @@ void selectGame(char INfastmode)
 		{
 		//speedup=0.975;
 		speedup=1;
-		delaytime=800;
+		delaytime=120;
 		}
 	else if (gamespeed==1)
 		{
 		speedup=0.9375;
-		delaytime=600;
+		delaytime=100;
 		}
 	else if (gamespeed==2)
 		{
 		speedup=0.9;
-		delaytime=400;
+		delaytime=80;
 		}
 	if		(gametype==0)
 		{
@@ -137,16 +171,16 @@ void selectGame(char INfastmode)
 	}
 	
 
-void gameResetVars()
+void gameResetVars(void)
 	{
 #ifdef DEBUG_STREAM
 	printf("gameResetVars - start");
 #endif
-	for (int i=0; i<AREA_HEIGHT; i++)
+	for (int i=0; i<AREA_HEIGHT+2; i++)
 		{
 		for (int j=0; j<AREA_WIDTH; j++)
 			{
-			area[j][i]=0;
+			area[j][i]=EMPTY_AREA;
 			}
 		}
 	
@@ -158,43 +192,35 @@ void gameResetVars()
 		for (int j=0; (j<=Ztet)&&(pieceToCreate==prob); j++)
 			{
 			add+=chnc[j];
-			if (add>rndm) pieceToCreate=j*4;
+			if (add>rndm) pieceToCreate=j;
 			}
 		if (pieceToCreate==prob)
 			{
-			ClearScreen();
-			TextOutput(0,24,add,0);
-			TextOutput(0,16,rndm,0);
-			TextOutput(0,00,0,0);
-			Wait(1000);
+			fprintf( stderr, "Error in randomizer code. add:%d, rndm:%d\n", add,rndm);
+			SDL_Quit();
+			exit( -1 );
 			}
 		nextPiece[i]=pieceToCreate;
 		}
-	showDisp		= 0;
 	viewDbg			= 0;
 	//gametype		= 0;
 	//gamespeed		= 0;
 	//delaytime		= 0;
 	lockDelay		= 0;
-	//prevRht		= 0;
-	//prevLft		= 0;
-	//prevDrp		= 0;
-	//prevRot		= 0;
 	currentPiece	= 0;
 	currentRotate 	= 0;
+	currentHoldPiece= EMPTY_AREA;
+	usedHoldPiece	= false;
 	tetLR			= 0;
 	tetUD			= 0;
 	drop			= 0;
 	prevWaited		= 0;
 	speedup			= 0;
 	score			= 0;
-	msg				= 0;
-	disp			= 0;
-	accesshigh		= 0;
 	alive			= true;
-	refresh			= true;
 	playagain		= true;
 	piecemoving		= true;
+	paused 			= false;
 #ifdef DEBUG_STREAM
 	printf(" - end\n");
 #endif
@@ -202,21 +228,60 @@ void gameResetVars()
 
 
 	
-char gameEnd()
+char gameEnd(void)
 	{
 #ifdef DEBUG_STREAM
 	printf("gameEnd - start");
 #endif
-	disp=888;
-	drawBoard(true);
-	char plyagn=false;
-	Wait(2500);
-	ClearScreen();
-	if (highMade) writeHighName(accesshigh,score);
-	ClearScreen();
+	//drawBoard();
+	//bool tPlayAgain=false;
+	//SDL_Delay(2500);
+	//if (highMade) writeHighName(accesshigh,score);
 	//ASK TO PLAY AGAIN
 #ifdef DEBUG_STREAM
 	printf(" - end\n");
 #endif
-	return plyagn;
+	return 0;//tPlayAgain;
 	}
+
+
+void quit(void)
+	{
+    TTF_CloseFont(font);
+    TTF_Quit();
+    SDL_Quit();
+	}
+
+	
+	
+	
+// was in init()
+// icon creation code
+		
+		
+	/*drawRect.w = 64;
+	drawRect.h = 64;
+	drawRect.x = 0;
+	drawRect.y = 0;
+	SDL_FillRect(icon, &drawRect, SDL_MapRGB(icon->format,
+		otherColors[C_BACK][0],
+		otherColors[C_BACK][1],
+		otherColors[C_BACK][2]));*/
+		
+		
+	/*drawRect.w = 16;
+	drawRect.h = 48;
+	drawRect.x = 48;
+	drawRect.y = 8;
+	SDL_FillRect(icon, &drawRect, SDL_MapRGB(icon->format,
+		tetColors[Jtet][0],
+		tetColors[Jtet][1],
+		tetColors[Jtet][2]));
+	drawRect.w = 16;
+	drawRect.h = 16;
+	drawRect.x = 16;
+	drawRect.y = 40;
+	SDL_FillRect(icon, &drawRect, SDL_MapRGB(icon->format,
+		tetColors[Jtet][0],
+		tetColors[Jtet][1],
+		tetColors[Jtet][2]));*/

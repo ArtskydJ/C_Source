@@ -19,17 +19,6 @@ char ButtonPressed(int INbutton)
 	return 0;
 	}
 
-void ClearScreen()
-	{
-	drawRect.w = SCR_WIDTH;
-	drawRect.h = SCR_HEIGHT;
-	drawRect.x = 0;
-	drawRect.y = 0;
-	SDL_FillRect(screen, &drawRect, SDL_MapRGB(screen->format, color[0][0], color[0][1], color[0][2]));
-	SDL_Flip(screen);
-	printf("cls\n");
-	}
-
 void TextOutput(int x, int y, int n, int options)
 	{
 	//std::cout<<"text "<<n<<"\n";
