@@ -26,6 +26,7 @@
 
 #define PREVIEW_PIECE_SPACING	3
 #define PREVIEW_PIECES   		(AREA_HEIGHT/PREVIEW_PIECE_SPACING)
+#define PREVIEW_PIECE_CALC		14	//
 //TIMING
 #define waitGravity     5
 #define waitDisp        18
@@ -214,10 +215,10 @@ const char tet[7][2][4][4]=
 
 
 char area[AREA_WIDTH][AREA_HEIGHT+2]; //Two hidden rows
-char chnc[8];
-int pieceCount[8]={0,0,0,0,0,0,0,0};
-int nextPiece[PREVIEW_PIECES];
-char pieceName[7]={'I','J','L','O','S','T','Z'};
+int pieceCount[8];
+int nextPiece[7];
+int nextPieceRefresh[7];
+bool pieceCreated[7];
 
 
 
@@ -232,7 +233,6 @@ bool usedHoldPiece	= false;
 bool paused			= false;
 
 int viewDbg				=0;
-int gametype			=0;
 int gamespeed			=0;
 int delaytime			=0;
 int lockDelay			=0;
@@ -258,4 +258,5 @@ TTF_Font *font			=NULL;
 bool inputOutput(int);
 void ClearScreen(void);
 void drawBoard(void);
+void generate7Pieces(int*);
 void quit(void);

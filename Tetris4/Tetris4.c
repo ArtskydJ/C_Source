@@ -26,7 +26,7 @@
 		#undef MODE
 	#endif
 	#define MODE	0
-//	#define DEBUG_STREAM		//turns on most debug stream messages
+	#define DEBUG_STREAM		//turns on most debug stream messages
 //	#define DEBUG_BOARD			//turns on board drawing in debug stream
 //	#define DEBUG_INFO			//turns on debug stream info about game's state
 //	#define DRAW_TET_DETAILS	//turns on details of tetromino drawing positions
@@ -106,15 +106,14 @@ InitAndQuit  -  line 22
 BUGS
 
 FIX!
-the icon looks wrong
-line, and level counters don't count up
+the icon is invisible
+level counter doesn't count up
 piece never speeds up
 
 FIXED?
 	
 	
 TODO
-+ use 'The Random Generator'
 + add bonus points for combos
 + add background music
 + change BLINK_TIME into a variable? (or divide by delaytime?)
@@ -130,6 +129,7 @@ TODO
 		[if (blocksInRow>0 && i<2)]		// TetrominoManip.c		r:171	c:9
 
 DONE
++ use 'The Random Generator'
 + line clears should blink
 + show "paused" if paused.
 + clean up the debug stream; too much un-needed junk in it

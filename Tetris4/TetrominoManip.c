@@ -75,7 +75,35 @@ char rotate(int INdir)
 	return (cantRotate==false);
 	}
 	
+
+void generate7Pieces(int *INarray)
+	{
+	for (int i=0; i<7; i++)
+		{
+		pieceCreated[i]=0;
+		}
 	
+	for (int i=0; i<7; i++)
+		{
+		char tPiece = rand()%(7-i);
+		
+		for (int j=0; j<7; j++)
+			if (tPiece>=j && pieceCreated[j])
+				tPiece++;
+		
+		INarray[i]=tPiece;
+		pieceCreated[tPiece]=true;
+		}
+		
+	/*char tText[30];
+	sprintf(tText,"%d  %d  %d  %d  %d  %d  %d\n",
+		INarray[0], INarray[1], INarray[2], INarray[3],
+		INarray[4], INarray[5], INarray[6]);
+	EZ_apply_text(screen,tText,font,EZ_new_rect(10,10,0,0),EZ_new_color(100,100,100));
+	SDL_Flip(screen);
+	SDL_Delay(5000);*/
+	}
+
 	
 
 void pieceCreate(bool INcreateHold)
@@ -84,38 +112,30 @@ void pieceCreate(bool INcreateHold)
 	printf("pieceCreate - start");
 #endif
 
-	int tempPiece = currentHoldPiece;
+	int tPiece = currentHoldPiece;
 	if (INcreateHold==HOLD) //get the piece from the hold
 		{
 		currentHoldPiece = currentPiece;	//Switch the hold and current pieces
-		if (tempPiece!=EMPTY_AREA)
-			currentPiece = tempPiece;
+		if (tPiece!=EMPTY_AREA)
+			currentPiece = tPiece;
 		}
-	if (INcreateHold==COMING || tempPiece==EMPTY_AREA) //create new piece
+	if (INcreateHold==COMING || tPiece==EMPTY_AREA) //create new piece
 		{
-		int pieceToCreate=prob;
-		int rndm=(rand())%(chnc[prob]);
-		int add=0;
-		for (int j=0; (j<=Ztet)&&(pieceToCreate==prob); j++)
-			{
-			add+=chnc[j];
-			if (add>rndm) pieceToCreate=j;
-			}
-		if (pieceToCreate==prob)
-			{
-			fprintf( stderr, "Error in randomizer code. add:%d, rndm:%d\n", add,rndm);
-			SDL_Quit();
-			exit( -1 );
-			}
 		currentPiece=nextPiece[0];
+		for (int i=1; i<7; i++)
+			{
+			nextPiece[i-1] = nextPiece[i];
+			}
+		nextPiece[6]=nextPieceRefresh[0];
+		for (int i=1; i<7; i++)
+			{
+			nextPieceRefresh[i-1] = nextPieceRefresh[i];
+			}
+		nextPieceRefresh[6]=-1;
+		if (nextPieceRefresh[0]<0)
+			generate7Pieces(nextPieceRefresh);
 		pieceCount[currentPiece]++;
 		pieceCount[ALL]++;
-		
-		for (int i=1; i<PREVIEW_PIECES; i++)
-			{
-			nextPiece[i-1]=nextPiece[i];
-			}
-		nextPiece[PREVIEW_PIECES-1]=pieceToCreate;
 		}
 
 	currentRotate	= 2;

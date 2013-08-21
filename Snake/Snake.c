@@ -5,49 +5,63 @@
 using MinGW (32-bit) and SDL (32-bit).
 The following commands were used:
 	cd $(CURRENT_DIRECTORY)
-	gcc -std=c99 -o $(NAME_PART).exe $(FILE_NAME) -lmingw32 -lSDLmain -lSDL -mwindows
+	gcc -std=c99 -o $(NAME_PART).exe $(FILE_NAME) -lmingw32 -lSDLmain -lSDL -lSDL_ttf -mwindows
 	$(CURRENT_DIRECTORY)\$(NAME_PART).exe
 */
 
 //#define DEBUG
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-#include <windows.h>
-#include <math.h>
-#include <conio.h>
-#include <stdlib.h>
-#include <time.h>
-#include "C:\SDL\include\SDL\SDL.h"
-#define cSnake			SDL_MapRGB(screen->format,000,000,255)
-#define cFood			SDL_MapRGB(screen->format,000,200,000)
-#define cBack			SDL_MapRGB(screen->format,225,225,225)
-#define SCR_WIDTH		640
-#define SCR_HEIGHT		480
+#include <stdio.h>		//Untested
+#include <stdbool.h>	//Untested
+//#include <string.h>	//IDK
+#include <windows.h>	// Message Box
+#include <math.h>		// floor()
+//#include <conio.h>	//IDK
+//#include <stdlib.h>	//IDK
+#include <time.h>		//time for random
+#include "SDL\SDL.h"
+#include "EasySDL.h"
+#define C_SNAKE			0x0000FF
+#define C_FOOD			0x00C800
+#define C_BACK			0xE1E1E1
+#define NO_MODES		4
+#define BLOCK_SIZE		40
+#define WIDTH_BLOCKS	16
+#define HEIGHT_BLOCKS	12
+#define SCR_WIDTH		(WIDTH_BLOCKS*BLOCK_SIZE)
+#define SCR_HEIGHT		(HEIGHT_BLOCKS*BLOCK_SIZE)
 #define SCR_BPP			32
-#define FULL			255
-#define BlockSize		40
-#define WidthBlocks		16
-#define HeightBlocks	12
-#define Difficulty		2
 #define LF	1
 #define UP	2
 #define RT	3
 #define DN	4
 
+const Uint32 modeColor[NO_MODES]=
+	{
+	0x00C800,
+	0x00C8C8,
+	0xFF7F00,
+	0xFF0000
+	};
+
 int firstx,firsty,lastx,lasty;
 int selection,length,grow,startlength;
 int dir=RT;
 int score=0;
-int board[WidthBlocks+1][HeightBlocks+1];
+int board[WIDTH_BLOCKS+1][HEIGHT_BLOCKS+1];
 float speedup, delaytime;
 bool foodate=false;
 bool dead=false;
-bool quit=false;
+bool stop=false;
 SDL_Surface *screen=NULL;
 SDL_Rect drawrect;
 
-int set()
+void quit(void)
+	{
+	//TTF_Quit();
+	SDL_Quit();
+	}
+
+int set(void)
 	{
 	int ret=SDL_Init(SDL_INIT_VIDEO);
 	if (ret==0)
@@ -59,44 +73,119 @@ int set()
 #endif
 		//Graphics
 		SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
-		//screen = SDL_SetVideoMode(SCR_WIDTH,SCR_HEIGHT,SCR_BPP,SDL_DOUBLEBUF|SDL_HWSURFACE|SDL_ANYFORMAT);
 		screen = SDL_SetVideoMode(SCR_WIDTH,SCR_HEIGHT,SCR_BPP,SDL_SWSURFACE);
+		
+		//OPEN TTF STUFF
+		
+		atexit(quit);
 		}
 	return ret;
 	}
 
-void reset(int selection)
+void reset()
 	{
-	SDL_WM_SetCaption("SNAKE | Score:0 | Joseph Dykstra", NULL);
-	if (selection<1) {selection=1;}
-	if (selection>5) {selection=5;}
-	if (selection==1)
+	SDL_WM_SetCaption("Snake | Joseph Dykstra", NULL);
+	
+	
+	
+	
+	SDL_Event tEvent;
+	int tSelection=0, tX, tY, tClickSelection;
+	char appName[50];
+	sprintf(appName,"Tetris");
+	while (tSelection==0)
 		{
-		grow=2;
-		startlength=3;
-		speedup=0.975;
-		delaytime=300;
+		for (int i=0; i<NO_MODES; i++)
+			{
+			EZ_apply_rect(screen,
+				EZ_new_rect( BLOCK_SIZE,							// X
+					((HEIGHT_BLOCKS)/NO_MODES)*i*BLOCK_SIZE,		// Y
+					(WIDTH_BLOCKS-2)*BLOCK_SIZE,					// W
+					(HEIGHT_BLOCKS)/(NO_MODES+1)*BLOCK_SIZE ),		// H		(NO_MODES+1) has issues, but NO_MODES doesn't look right
+				modeColor[i]);
+			}
+		SDL_Flip(screen);
+		
+		while(SDL_PollEvent(&tEvent))
+			{
+			if (tEvent.type==SDL_MOUSEBUTTONDOWN)
+				{
+				SDL_WM_SetCaption("clicked out of x bounds", NULL);
+				if (tEvent.button.x>BLOCK_SIZE && tEvent.button.x<(WIDTH_BLOCKS-1)*BLOCK_SIZE)
+					{
+					SDL_WM_SetCaption("clicked in x bounds", NULL);
+					tClickSelection=-1;
+					for (int i=0; i<NO_MODES; i++)
+						{
+						if (tEvent.button.y > ((HEIGHT_BLOCKS)/NO_MODES)*i*BLOCK_SIZE &&
+							tEvent.button.y < ((HEIGHT_BLOCKS)/(NO_MODES+1))*(i+1)*BLOCK_SIZE)
+							{
+							tClickSelection=i;
+							sprintf(appName,"clicked in x and y bounds: %d",i);
+							SDL_WM_SetCaption(appName, NULL);
+							}
+						}
+					}
+				}
+			if (tEvent.type==SDL_MOUSEBUTTONUP)
+				{
+				SDL_WM_SetCaption("released out of x bounds", NULL);
+				if (tEvent.button.x>BLOCK_SIZE && tEvent.button.x<(WIDTH_BLOCKS-1)*BLOCK_SIZE)
+					{
+					SDL_WM_SetCaption("released in x bounds", NULL);
+					for (int i=0; i<NO_MODES; i++)
+						{
+						if (tEvent.button.y > ((HEIGHT_BLOCKS)/NO_MODES)*i*BLOCK_SIZE &&
+							tEvent.button.y < ((HEIGHT_BLOCKS)/(NO_MODES+1))*(i+1)*BLOCK_SIZE)
+							{
+							sprintf(appName,"released in different x and y bounds: %d",i);
+							SDL_WM_SetCaption(appName, NULL);
+							if (tClickSelection==i)
+								{
+								tSelection=i;
+								sprintf(appName,"released in same x and y bounds: %d",i);
+								SDL_WM_SetCaption(appName, NULL);
+								}
+							}
+						}
+					}
+				}
+			
+			if (tEvent.type==SDL_QUIT)
+				{
+				exit(0);
+				}
+				
+			}
 		}
-	else if (selection==2)
+	
+	
+	switch (tSelection)
 		{
-		grow=3;
-		startlength=3;
-		speedup=0.9375;
-		delaytime=250;
-		}
-	else if (selection==3)
-		{
-		grow=4;
-		startlength=3;
-		speedup=0.9;
-		delaytime=200;
-		}
-	else if (selection==4)
-		{
-		grow=10;
-		startlength=10;
-		speedup=1;
-		delaytime=150;
+		case 0:
+			grow=2;
+			startlength=3;
+			speedup=0.975;
+			delaytime=300;
+			break;
+		case 1:
+			grow=3;
+			startlength=3;
+			speedup=0.9375;
+			delaytime=250;
+			break;
+		case 2:
+			grow=4;
+			startlength=3;
+			speedup=0.9;
+			delaytime=200;
+			break;
+		case 3:
+			grow=10;
+			startlength=10;
+			speedup=1;
+			delaytime=150;
+			break;
 		}
 	srand(time(0));
 	foodate=0;
@@ -108,34 +197,34 @@ void reset(int selection)
 	length=startlength;
 	firstx=startlength-1;
 	firsty=lastx=lasty=0;
-	for (int x=0;x<WidthBlocks;x++)
+	for (int x=0;x<WIDTH_BLOCKS;x++)
 		{
-		for (int y=0;y<HeightBlocks;y++) //CLEAR BOARD
+		for (int y=0;y<HEIGHT_BLOCKS;y++) //CLEAR BOARD
 			{
 			board[x][y]=0; //(rand()%3)%2;
 			}
 		}
-	if (startlength>WidthBlocks) startlength=WidthBlocks;
+	if (startlength>WIDTH_BLOCKS) startlength=WIDTH_BLOCKS;
 	for	(int x=0;x<startlength;x++) //MAKE SNAKE
 		{
 		board[x][0]=x+1;
 		}
 	}
 
-void makeFood()
+void makeFood(void)
 	{
 	int n=1;
 	while (n) //MAKE FOOD
 		{
-		int x=round(rand()%(WidthBlocks-1)+1);
-		int y=round(rand()%(HeightBlocks-1)+1);
+		int x=rand()%(WIDTH_BLOCKS-1)+1;
+		int y=rand()%(HEIGHT_BLOCKS-1)+1;
 		if (board[x][y]==0) {n=0; board[x][y]=-1;}
 		}
 	foodate=0;
 	dead=0;
 	}
 
-void snakeMove()
+void snakeMove(void)
 	{
 	int n=0;
 	SDL_Event test_event;
@@ -143,7 +232,7 @@ void snakeMove()
 		{
 		if (test_event.type == SDL_QUIT)
 			{
-			quit=1;
+			exit(0);
 			}
 		if (test_event.key.state == SDL_PRESSED)
 			{
@@ -177,7 +266,7 @@ void snakeMove()
 	if (dir==UP) tempy--;
 	if (dir==RT) tempx++;
 	if (dir==DN) tempy++;
-	if	(tempx<0 || tempx>=WidthBlocks || tempy<0 || tempy>=HeightBlocks)
+	if	(tempx<0 || tempx>=WIDTH_BLOCKS || tempy<0 || tempy>=HEIGHT_BLOCKS)
 		{
 		dead = 1;
 		foodate = 1;
@@ -200,9 +289,9 @@ void snakeMove()
 		{
 		int high = startlength-1;
 		//length=0;
-		for	(int x=0;x<WidthBlocks;x++)
+		for	(int x=0;x<WIDTH_BLOCKS;x++)
 			{
-			for	(int y=0;y<HeightBlocks;y++)
+			for	(int y=0;y<HEIGHT_BLOCKS;y++)
 				{
 				n=board[x][y];
 				if (n>high) {firstx=x;firsty=y;high=n;}
@@ -216,39 +305,39 @@ void snakeMove()
 #endif
 	}
 
-void snakeDraw()
+void snakeDraw(void)
 	{
-	SDL_FillRect(screen,NULL,cBack);
-	drawrect.h = BlockSize;
-	drawrect.w = BlockSize;
-	for (int y=0;y<HeightBlocks;y++)
+	SDL_FillRect(screen,NULL,C_BACK);
+	drawrect.h = BLOCK_SIZE;
+	drawrect.w = BLOCK_SIZE;
+	for (int y=0;y<HEIGHT_BLOCKS;y++)
 		{
-		for (int x=0;x<WidthBlocks;x++)
+		for (int x=0;x<WIDTH_BLOCKS;x++)
 			{
 			if (board[x][y]>0) //Snake
 				{
-				drawrect.x = x*BlockSize;
-				drawrect.y = y*BlockSize;
-				SDL_FillRect(screen , &drawrect , cSnake);
+				drawrect.x = x*BLOCK_SIZE;
+				drawrect.y = y*BLOCK_SIZE;
+				SDL_FillRect(screen , &drawrect , C_SNAKE);
 				}
 			if (board[x][y]<0) //Food
 				{
-				drawrect.x = x*BlockSize;
-				drawrect.y = y*BlockSize;
-				SDL_FillRect(screen , &drawrect , cFood);
+				drawrect.x = x*BLOCK_SIZE;
+				drawrect.y = y*BLOCK_SIZE;
+				SDL_FillRect(screen , &drawrect , C_FOOD);
 				}
 			}
 		}
 	SDL_Flip(screen);
 	}
 
-void snakeGrow()
+void snakeGrow(void)
 	{
 	if (dead==0)
 		{
-		for (int y=0;y<HeightBlocks;y++)
+		for (int y=0;y<HEIGHT_BLOCKS;y++)
 			{
-			for (int x=0;x<WidthBlocks;x++)
+			for (int x=0;x<WIDTH_BLOCKS;x++)
 				{
 				if	(board[x][y]>=1)	{board[x][y]+=grow;}
 				}
@@ -263,12 +352,12 @@ void snakeGrow()
 		}
 	}
 
-void gameOver()
+void gameOver(void)
 	{
-	if (!quit)
-		quit=(MessageBox(MB_APPLMODAL,"Play Again?","GAME OVER",MB_YESNO|MB_ICONQUESTION)==IDNO);
+	if (!stop)
+		stop=(MessageBox(MB_APPLMODAL,"Play Again?","GAME OVER",MB_YESNO|MB_ICONQUESTION)==IDNO);
 #ifdef DEBUG
-	cout<<"quit="<<quit;
+	cout<<"stop="<<stop;
 #endif
 	}
 
@@ -277,16 +366,16 @@ int main(int argc, char *argv[])
 	int go=set();
 	if (go==0)
 		{
-		while (!quit)
+		while (!stop)
 			{
-			reset(Difficulty);
-			while (!dead && !quit) //WHILE: ALIVE
+			reset();
+			while (!dead && !stop) //WHILE: ALIVE
 				{
 				makeFood();
-				while (!dead && !foodate && !quit) //WHILE: FOOD NOT EATEN
+				while (!dead && !foodate && !stop) //WHILE: FOOD NOT EATEN
 					{
 					snakeDraw();
-					for (int i=0; i<delaytime && !quit; i++)
+					for (int i=0; i<delaytime && !stop; i++)
 						SDL_Delay(1); //WAIT
 					snakeMove();
 					}
@@ -298,6 +387,15 @@ int main(int argc, char *argv[])
 	SDL_Quit();
 	return go;
 }
+
+/*CURRENTLY WORKING ON
+
+line 99
+check y for btn press
+look at lines 81-84 for y vals
+
+
+*/
 
 /* ISSUES - BUGS
 */

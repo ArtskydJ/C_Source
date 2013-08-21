@@ -66,105 +66,31 @@ void selectGame(char INfastmode)
 #ifdef DEBUG_STREAM
 	printf("selectGame - start");
 #endif
-	prevQuadClear=false;
-	//prevRht=0;
-	//prevLft=0;
-	score=0;
-	//disp="";
-	//accesshigh="Tet";
 	if (INfastmode) //debugging
 		{
-		gamespeed=0;	//0=slow
-		gametype=2;		//2=normal
+		gamespeed=0;		//0=slow
 		}
 	else
 		{
 		//choose gamespeed
-		//choose gametype
 		}
 
-	if		(gamespeed==0)
+	switch(gamespeed)
 		{
-		//speedup=0.975;
-		speedup=1;
-		delaytime=120;
+		case 0:
+			speedup=1; //speedup=0.975;
+			delaytime=120;
+			break;
+		case 1:
+			speedup=0.9375;
+			delaytime=100;
+			break;
+		case 2:
+			speedup=0.9;
+			delaytime=80;
+			break;
 		}
-	else if (gamespeed==1)
-		{
-		speedup=0.9375;
-		delaytime=100;
-		}
-	else if (gamespeed==2)
-		{
-		speedup=0.9;
-		delaytime=80;
-		}
-	if		(gametype==0)
-		{
-		chnc[Itet]=2;
-		chnc[Jtet]=1;
-		chnc[Ltet]=1;
-		chnc[Otet]=2;
-		chnc[Stet]=0;
-		chnc[Ttet]=1;
-		chnc[Ztet]=0;
-		chnc[prob]=7;
-		}
-	else if (gametype==1)
-		{
-		chnc[Itet]=3;
-		chnc[Jtet]=1;
-		chnc[Ltet]=1;
-		chnc[Otet]=3;
-		chnc[Stet]=1;
-		chnc[Ttet]=2;
-		chnc[Ztet]=1;
-		chnc[prob]=12;
-		}
-	else if (gametype==2)
-		{
-		chnc[Itet]=1;
-		chnc[Jtet]=1;
-		chnc[Ltet]=1;
-		chnc[Otet]=1;
-		chnc[Stet]=1;
-		chnc[Ttet]=1;
-		chnc[Ztet]=1;
-		chnc[prob]=7;
-		}
-	else if (gametype==3)
-		{
-		chnc[Itet]=2;
-		chnc[Jtet]=3;
-		chnc[Ltet]=3;
-		chnc[Otet]=2;
-		chnc[Stet]=4;
-		chnc[Ttet]=3;
-		chnc[Ztet]=4;
-		chnc[prob]=21;
-		}
-	else if (gametype==4)
-		{
-		chnc[Itet]=1;
-		chnc[Jtet]=3;
-		chnc[Ltet]=3;
-		chnc[Otet]=2;
-		chnc[Stet]=4;
-		chnc[Ttet]=2;
-		chnc[Ztet]=4;
-		chnc[prob]=19;
-		}
-	else if (gametype==5) //DEBUG_STREAM ONLY
-		{
-		chnc[Itet]=0;
-		chnc[Jtet]=1;
-		chnc[Ltet]=0;
-		chnc[Otet]=2;
-		chnc[Stet]=0;
-		chnc[Ttet]=0;
-		chnc[Ztet]=1;
-		chnc[prob]=4;
-		}
+
 #ifdef DEBUG_STREAM
 	printf(" - end\n");
 #endif
@@ -183,29 +109,38 @@ void gameResetVars(void)
 			area[j][i]=EMPTY_AREA;
 			}
 		}
+		
+	generate7Pieces(nextPiece);
+	generate7Pieces(nextPieceRefresh);
 	
-	for (int i=0; i<3; i++)
+	for (int i=0; i<8; i++)
 		{
-		int pieceToCreate=prob;
-		int rndm=(rand())%(chnc[prob]);
-		int add=0;
-		for (int j=0; (j<=Ztet)&&(pieceToCreate==prob); j++)
-			{
-			add+=chnc[j];
-			if (add>rndm) pieceToCreate=j;
-			}
-		if (pieceToCreate==prob)
-			{
-			fprintf( stderr, "Error in randomizer code. add:%d, rndm:%d\n", add,rndm);
-			SDL_Quit();
-			exit( -1 );
-			}
-		nextPiece[i]=pieceToCreate;
+		pieceCount[i]=0;
 		}
+	
+	for (int i=0; i<7; i++)
+		{
+		pieceCreated[i]=0;
+		}
+	
+	/*
+	1	tPc = rand()%6
+	2	nextpiece[0] = tPc
+	
+	3	tPc = rand()%5
+	4	if pieceCreated[n] and tPc>=n then tPc++
+	
+	5	tPc = rand()%4
+	6	if tPc>=nextpiece[0] then tPc++
+	7	if tPc>=nextpiece[1] then tPc++
+	
+	8	tPc = rand()%3
+	9	if tPc>=nextpiece[0] then tPc++
+	10	if tPc>=nextpiece[1] then tPc++
+	11	if tPc>=nextpiece[2] then tPc++
+	*/
+	
 	viewDbg			= 0;
-	//gametype		= 0;
-	//gamespeed		= 0;
-	//delaytime		= 0;
 	lockDelay		= 0;
 	currentPiece	= 0;
 	currentRotate 	= 0;
@@ -221,6 +156,7 @@ void gameResetVars(void)
 	playagain		= true;
 	piecemoving		= true;
 	paused 			= false;
+	prevQuadClear	= false;
 #ifdef DEBUG_STREAM
 	printf(" - end\n");
 #endif
