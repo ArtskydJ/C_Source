@@ -1,2 +1,0 @@
-
-SDL_Init() goodSDL_SetVideoMode() goodTTF_Init() goodTTF_OpenFont() goodSDL_CreateRGBSurface() good
