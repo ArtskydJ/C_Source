@@ -162,6 +162,7 @@ pip-log.txt
 # Mac crap
 .DS_Store
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 ########## include thing for C_Source
 */#including/arial.ttf
@@ -169,6 +170,19 @@ pip-log.txt
 */#including/lazy.ttf
 */#including/README.md
 */#including/SDL.dll
+||||||| merged common ancestors
+=======
+
+
+##############################
+## Ignore #include/ folders ##
+##############################
+arial.ttf
+EasySDL.h
+lazy.ttf
+README.md
+SDL.dll
+>>>>>>> temp
 ||||||| merged common ancestors
 =======
 
