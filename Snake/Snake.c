@@ -85,10 +85,7 @@ int set(void)
 void reset()
 	{
 	SDL_WM_SetCaption("Snake | Joseph Dykstra", NULL);
-	
-	
-	
-	
+
 	SDL_Event tEvent;
 	int tSelection=0, tX, tY, tClickSelection;
 	char appName[50];

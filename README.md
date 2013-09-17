@@ -1,47 +1,21 @@
-C_Source
+If a SDL application is shared with someone, give them:
 
-Source code for some projects I have been working on...
+SDL.dll
 
---------
+==========
+If the application has text in it, also give them:
 
-Eight Queens
+libfreetype-6.dll
 
-Command-line graphics (ASCII art) Eight Queens solver.
+SDL_ttf.dll
 
-http://en.wikipedia.org/wiki/Eight_queens_puzzle
+zlib1.dll
 
-========
+==========
+They should put these in the same dir as the .exe file.
 
-Game Of Life
+If they want, they can put them in:
 
-Graphical John Conway's Game Of Life.
+C:\Windows\System32\	(on 32 bit windows)
 
-http://en.wikipedia.org/wiki/Conway's_Game_of_Life
-
-========
-
-HowTo
-
-This is a base project for SDL-based-projects.
-
-========
-
-Snake
-
-Classic snake game; has graphics, but needs User Interface for selecting game type.
-
-========
-
-Tetris
-
-Tetris2 The tests work.
-
-Tetris3 Um...
-
-Tetris4 Works quite well, but not yet finished.
-
-========
-
-ReadMe
-
-This file, lol.
+C:\Windows\SysWOW64\	(on 64 bit windows)
