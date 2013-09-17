@@ -163,8 +163,8 @@ pip-log.txt
 .DS_Store
 
 ########## include thing for C_Source
-arial.ttf
-EasySDL.h
-lazy.ttf
-README.md
-SDL.dll
+*/#including/arial.ttf
+*/#including/EasySDL.h
+*/#including/lazy.ttf
+*/#including/README.md
+*/#including/SDL.dll
