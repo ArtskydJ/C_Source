@@ -161,6 +161,7 @@ pip-log.txt
 
 # Mac crap
 .DS_Store
+<<<<<<< HEAD
 
 
 ##############################
@@ -172,3 +173,16 @@ lazy.ttf
 README.md
 SDL.dll
 
+||||||| merged common ancestors
+=======
+
+
+##############################
+## Ignore #include/ folders ##
+##############################
+arial.ttf
+EasySDL.h
+lazy.ttf
+README.md
+SDL.dll
+>>>>>>> dbc844b142231cae9c39c5e4d221af4c2f0560b6
