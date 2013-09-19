@@ -212,11 +212,11 @@ void EZ_waitForExit()
 
 char EZ_checkForExit()
 	{
-	char ret=false;
+	char ret=0;
 	SDL_Event tempEvent;
 	while( SDL_PollEvent( &tempEvent ) )
 		if( tempEvent.type == SDL_QUIT )
-			ret=true;
+			ret=1;
 	return ret;
 	}
 
