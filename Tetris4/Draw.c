@@ -24,7 +24,7 @@ void drawTetromino(int INtet,int INrot, int INx, int INy, int INreal)
 				default:
 					fprintf( stderr, "drawTetromino, bad draw type value \n");
 					SDL_Quit();
-					exit( -1 );
+					exit(FAKE_TET_ERROR);
 					break;
 				}
 #ifdef DRAW_TET_DETAILS
@@ -216,7 +216,7 @@ void drawBoard(void)
 		char tempPrintPaused[10]="PAUSED!";
 		SDL_Color tempColorPaused = EZ_Uint32_to_SDL(otherColors[C_TEXT]);
 		//SDL_Rect tRect = EZ_new_rect(SCR_WIDTH/2-30,SCR_HEIGHT/2,0,0);
-		EZ_set_rect(&tRect, tetLR*BLOCK_SIZE,(tetUD*(tetUD>=0)*BLOCK_SIZE)+BLOCK_SIZE/2,0,0);
+		EZ_set_rect(&tRect, (tetLR*BLOCK_SIZE>0)?(tetLR*BLOCK_SIZE):(0),(tetUD*(tetUD>=0)*BLOCK_SIZE)+BLOCK_SIZE/2,0,0);
 		EZ_apply_text(screen, tempPrintPaused, font, tRect, tempColorPaused);
 		}
 

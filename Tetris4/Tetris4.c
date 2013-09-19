@@ -4,11 +4,11 @@
 //Finished ??-??-2013
 #include "SDL/SDL.h"
 #include "SDL/SDL_ttf.h"
-#include "EasySDL.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
 //#include <string.h>
+#include "including/EasySDL.h"
 
 
 #define DEBUG

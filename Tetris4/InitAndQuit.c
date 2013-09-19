@@ -11,7 +11,7 @@ void initReset(void)
 		printf("SDL_Init() bad");
 		fprintf( stderr, "Could not initialize SDL: %s\n", SDL_GetError() );
 		quit();
-		exit(-1);
+		exit(SDL_INIT_ERROR);
 		}
 	else printf("SDL_Init() good");
 
@@ -20,21 +20,21 @@ void initReset(void)
 		{
 		printf("SDL_SetVideoMode() bad");
 		fprintf( stderr, "Could not set video mode: %s\n", SDL_GetError() );
-		exit(-1);
+		exit(VIDEO_INIT_ERROR);
 		}
 	else printf("SDL_SetVideoMode() good");
 	if( TTF_Init() == -1 )
 		{
 		printf("TTF_Init() bad");
 		fprintf( stderr, "Could not initialize TTF: %s\n", SDL_GetError() );
-		exit(-1);
+		exit(TTF_INIT_ERROR);
 		}
 	else printf("TTF_Init() good");
 	font = TTF_OpenFont("arial.ttf", TEXT_SIZE);
 	if( font == NULL )
 		{
 		printf("TTF_OpenFont() bad");
-		exit(-1);
+		exit(OPEN_FONT_ERROR);
 		}
 	else printf("TTF_OpenFont() good");
 	
@@ -43,7 +43,7 @@ void initReset(void)
 		{
 		printf("SDL_CreateRGBSurface() bad");
 		fprintf(stderr, "CreateRGBSurface failed with icon: %s\n", SDL_GetError());
-		exit(1);
+		exit(ICON_SURFACE_ERROR);
 		}
 	else printf("SDL_CreateRGBSurface() good");
 	
