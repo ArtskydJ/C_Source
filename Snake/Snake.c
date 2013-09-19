@@ -19,10 +19,11 @@ The following commands were used:
 //#include <stdlib.h>	//IDK
 #include <time.h>		//time for random
 #include "SDL\SDL.h"
-#include "EasySDL.h"
-#define C_SNAKE			0x0000FF
-#define C_FOOD			0x00C800
-#define C_BACK			0xE1E1E1
+#include "SDL/SDL_ttf.h"
+#include "including\EasySDL.h"
+#define C_SNAKE			0x0000FF	//Deep Blue
+#define C_FOOD			0x00C800	//Light Green
+#define C_BACK			0xE1E1E1	//Light Gray
 #define NO_MODES		4
 #define BLOCK_SIZE		40
 #define WIDTH_BLOCKS	16
@@ -34,6 +35,7 @@ The following commands were used:
 #define UP	2
 #define RT	3
 #define DN	4
+#define modeName(n)		((n==0)?"Easy":(n==1)?"Medium":(n==2)?"Hard":(n==3)?"Death":"lol")	//not good :(
 
 const Uint32 modeColor[NO_MODES]=
 	{
@@ -42,6 +44,7 @@ const Uint32 modeColor[NO_MODES]=
 	0xFF7F00,
 	0xFF0000
 	};
+
 
 int firstx,firsty,lastx,lasty;
 int selection,length,grow,startlength;
@@ -54,17 +57,19 @@ bool dead=false;
 bool stop=false;
 SDL_Surface *screen=NULL;
 SDL_Rect drawrect;
+TTF_Font *font=NULL;
+
 
 void quit(void)
 	{
-	//TTF_Quit();
+	TTF_Quit();
 	SDL_Quit();
 	}
 
+
 int set(void)
 	{
-	int ret=SDL_Init(SDL_INIT_VIDEO);
-	if (ret==0)
+	if (!SDL_Init(SDL_INIT_VIDEO))
 		{
 		//Allow cout
 #ifdef DEBUG
@@ -76,30 +81,46 @@ int set(void)
 		screen = SDL_SetVideoMode(SCR_WIDTH,SCR_HEIGHT,SCR_BPP,SDL_SWSURFACE);
 		
 		//OPEN TTF STUFF
+		if( TTF_Init() == -1 )
+			return -2;
+		
+		font = TTF_OpenFont( "arial.ttf", 28 );
+		if( font == NULL )
+			return -3;
 		
 		atexit(quit);
 		}
-	return ret;
+	else
+		return -1;
+	return 0;
 	}
+
 
 void reset()
 	{
 	SDL_WM_SetCaption("Snake | Joseph Dykstra", NULL);
 
 	SDL_Event tEvent;
-	int tSelection=0, tX, tY, tClickSelection;
+	int tSelection=-1, tX, tY, tClickSelection;
 	char appName[50];
 	sprintf(appName,"Tetris");
-	while (tSelection==0)
+	while (tSelection==-1)
 		{
 		for (int i=0; i<NO_MODES; i++)
 			{
 			EZ_apply_rect(screen,
-				EZ_new_rect( BLOCK_SIZE,							// X
-					((HEIGHT_BLOCKS)/NO_MODES)*i*BLOCK_SIZE,		// Y
-					(WIDTH_BLOCKS-2)*BLOCK_SIZE,					// W
-					(HEIGHT_BLOCKS)/(NO_MODES+1)*BLOCK_SIZE ),		// H		(NO_MODES+1) has issues, but NO_MODES doesn't look right
-				modeColor[i]);
+				EZ_new_rect(BLOCK_SIZE,										// X
+					((HEIGHT_BLOCKS*i)/NO_MODES)*BLOCK_SIZE+(BLOCK_SIZE/2),	// Y
+					(WIDTH_BLOCKS-2)*BLOCK_SIZE,							// W
+					(HEIGHT_BLOCKS)/(NO_MODES+1)*BLOCK_SIZE ),				// H
+				modeColor[i]);		//(NO_MODES+1) has issues, but NO_MODES doesn't look right
+			
+			EZ_apply_text(screen,modeName(i),font,
+				EZ_new_rect(BLOCK_SIZE*WIDTH_BLOCKS/2,						// X
+					((HEIGHT_BLOCKS*i)/NO_MODES)*BLOCK_SIZE+(BLOCK_SIZE/2),	// Y
+					(WIDTH_BLOCKS-2)*BLOCK_SIZE,							// W
+					(HEIGHT_BLOCKS)/(NO_MODES+1)*BLOCK_SIZE ),				// H
+				EZ_Uint32_to_SDL(0x000000));
 			}
 		SDL_Flip(screen);
 		
@@ -107,46 +128,40 @@ void reset()
 			{
 			if (tEvent.type==SDL_MOUSEBUTTONDOWN)
 				{
-				SDL_WM_SetCaption("clicked out of x bounds", NULL);
+				//SDL_WM_SetCaption("clicked out of x bounds", NULL);
 				if (tEvent.button.x>BLOCK_SIZE && tEvent.button.x<(WIDTH_BLOCKS-1)*BLOCK_SIZE)
 					{
-					SDL_WM_SetCaption("clicked in x bounds", NULL);
+					//SDL_WM_SetCaption("clicked in x bounds", NULL);
 					tClickSelection=-1;
-					for (int i=0; i<NO_MODES; i++)
+					for (int i=0; i<=NO_MODES; i++)
 						{
-						if (tEvent.button.y > ((HEIGHT_BLOCKS)/NO_MODES)*i*BLOCK_SIZE &&
-							tEvent.button.y < ((HEIGHT_BLOCKS)/(NO_MODES+1))*(i+1)*BLOCK_SIZE)
+						if (tEvent.button.y > ((float)((HEIGHT_BLOCKS*i*BLOCK_SIZE)/NO_MODES)+(BLOCK_SIZE/2)) &&
+							tEvent.button.y < ((float)((HEIGHT_BLOCKS*i*BLOCK_SIZE)/NO_MODES)+(BLOCK_SIZE/2)+(HEIGHT_BLOCKS)/(NO_MODES+1)*BLOCK_SIZE))
 							{
 							tClickSelection=i;
 							sprintf(appName,"clicked in x and y bounds: %d",i);
-							SDL_WM_SetCaption(appName, NULL);
-							}
-						}
-					}
-				}
+							//SDL_WM_SetCaption(appName, NULL);
+				}	}	}	}
+			
 			if (tEvent.type==SDL_MOUSEBUTTONUP)
 				{
-				SDL_WM_SetCaption("released out of x bounds", NULL);
+				//SDL_WM_SetCaption("released out of x bounds", NULL);
 				if (tEvent.button.x>BLOCK_SIZE && tEvent.button.x<(WIDTH_BLOCKS-1)*BLOCK_SIZE)
 					{
-					SDL_WM_SetCaption("released in x bounds", NULL);
-					for (int i=0; i<NO_MODES; i++)
+					//SDL_WM_SetCaption("released in x bounds", NULL);
+					for (int i=0; i<=NO_MODES; i++)
 						{
-						if (tEvent.button.y > ((HEIGHT_BLOCKS)/NO_MODES)*i*BLOCK_SIZE &&
-							tEvent.button.y < ((HEIGHT_BLOCKS)/(NO_MODES+1))*(i+1)*BLOCK_SIZE)
+						if (tEvent.button.y > ((float)((HEIGHT_BLOCKS*i*BLOCK_SIZE)/NO_MODES)+(BLOCK_SIZE/2)) &&
+							tEvent.button.y < ((float)((HEIGHT_BLOCKS*i*BLOCK_SIZE)/NO_MODES)+(BLOCK_SIZE/2)+(HEIGHT_BLOCKS)/(NO_MODES+1)*BLOCK_SIZE))
 							{
-							sprintf(appName,"released in different x and y bounds: %d",i);
-							SDL_WM_SetCaption(appName, NULL);
+							//sprintf(appName,"released in different x and y bounds: %d",i);
+							//SDL_WM_SetCaption(appName, NULL);
 							if (tClickSelection==i)
 								{
 								tSelection=i;
-								sprintf(appName,"released in same x and y bounds: %d",i);
-								SDL_WM_SetCaption(appName, NULL);
-								}
-							}
-						}
-					}
-				}
+								//sprintf(appName,"released in same x and y bounds: %d",i);
+								//SDL_WM_SetCaption(appName, NULL);
+				}	}	}	}	}
 			
 			if (tEvent.type==SDL_QUIT)
 				{
@@ -155,7 +170,8 @@ void reset()
 				
 			}
 		}
-	
+	//sprintf(appName,"done: %d",tSelection);
+	//SDL_WM_SetCaption(appName, NULL);
 	
 	switch (tSelection)
 		{
@@ -207,6 +223,7 @@ void reset()
 		board[x][0]=x+1;
 		}
 	}
+
 
 void makeFood(void)
 	{
@@ -302,6 +319,7 @@ void snakeMove(void)
 #endif
 	}
 
+
 void snakeDraw(void)
 	{
 	SDL_FillRect(screen,NULL,C_BACK);
@@ -328,6 +346,7 @@ void snakeDraw(void)
 	SDL_Flip(screen);
 	}
 
+
 void snakeGrow(void)
 	{
 	if (dead==0)
@@ -349,6 +368,7 @@ void snakeGrow(void)
 		}
 	}
 
+
 void gameOver(void)
 	{
 	if (!stop)
@@ -357,6 +377,7 @@ void gameOver(void)
 	cout<<"stop="<<stop;
 #endif
 	}
+
 
 int main(int argc, char *argv[])
 {
