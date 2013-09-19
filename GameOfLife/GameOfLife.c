@@ -26,9 +26,9 @@
 #include <time.h>
 #include <math.h>
 #include "SDL/SDL.h"
-#include "EasySDL.h"
+#include "including\EasySDL.h"
 char area[WIDTH+2][HEIGHT+2];
-#include "GOL_Pieces.c"
+#include "Pieces.c"
 SDL_Surface *screen=NULL;
 SDL_Rect *drawRect;
 
@@ -39,11 +39,8 @@ int set(void)
 	if (ret==0)
 		{
 		//Graphics
-		//SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
 		screen = SDL_SetVideoMode(SCR_WIDTH,SCR_HEIGHT,SCR_BPP,SDL_SWSURFACE);
 		SDL_Flip(screen);
-		//OPEN TTF STUFF
-		
 		atexit(SDL_Quit);
 		}
 	return ret;

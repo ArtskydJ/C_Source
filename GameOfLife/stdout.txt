@@ -1,0 +1,2 @@
+loading preset
+wait time=625
