@@ -5,9 +5,10 @@
 //	Compiles with the GNU c99 compiler
 //	gcc -std=c99 -o EightQueens3.exe EightQueens3.c
  
-#define FAST
-//#define DEBUG
+#define FAST		//Skips some debug stream
+//#define DEBUG		//
 #include <stdio.h>
+#include <conio.h>
 void clearcolumn(int),clearboard(),printboard();
 int valid(int,int);
 int temp=0, board[8][8], makeBool(int);
@@ -91,7 +92,8 @@ int main()
 		#endif
 		} // FINISHED!!!
 	printboard(); //print the board, do not disable this
-	Sleep(5000);
+	printf("\nPress any key to continue...");
+	getch();
 	}
 #endif
 
