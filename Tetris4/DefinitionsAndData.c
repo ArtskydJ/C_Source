@@ -27,6 +27,15 @@
 #define PREVIEW_PIECE_SPACING	3
 #define PREVIEW_PIECES   		(AREA_HEIGHT/PREVIEW_PIECE_SPACING)
 #define PREVIEW_PIECE_CALC		14	//
+
+//ERRORS
+#define SDL_INIT_ERROR		-1
+#define	VIDEO_INIT_ERROR	-2
+#define TTF_INIT_ERROR		-3
+#define OPEN_FONT_ERROR		-4
+#define ICON_SURFACE_ERROR	-5
+#define FAKE_TET_ERROR		-6
+
 //TIMING
 #define waitGravity     5
 #define waitDisp        18
