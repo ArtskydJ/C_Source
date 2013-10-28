@@ -21,28 +21,34 @@ The following commands were used:
 #include "SDL\SDL.h"
 #include "SDL/SDL_ttf.h"
 #include "including\EasySDL.h"
-#define C_SNAKE			0x0000FF	//Deep Blue
-#define C_FOOD			0x00C800	//Light Green
-#define C_BACK			0xE1E1E1	//Light Gray
-#define NO_MODES		4
-#define BLOCK_SIZE		40
-#define WIDTH_BLOCKS	16
-#define HEIGHT_BLOCKS	12
-#define SCR_WIDTH		(WIDTH_BLOCKS*BLOCK_SIZE)
-#define SCR_HEIGHT		(HEIGHT_BLOCKS*BLOCK_SIZE)
-#define SCR_BPP			32
-#define LF	1
-#define UP	2
-#define RT	3
-#define DN	4
-#define modeName(n)		((n==0)?"Easy":(n==1)?"Medium":(n==2)?"Hard":(n==3)?"Death":"lol")	//not good :(
+#define C_SNAKE					0x0000FF	//Deep Blue
+#define C_FOOD					0x00C800	//Light Green
+#define C_BACK					0xE1E1E1	//Light Gray
+#define NO_MODES				5
+#define BLOCK_SIZE				40
+#define WIDTH_BLOCKS			16
+#define HEIGHT_BLOCKS			12
+#define SCR_WIDTH				(WIDTH_BLOCKS*BLOCK_SIZE)
+#define SCR_HEIGHT				(HEIGHT_BLOCKS*BLOCK_SIZE)
+#define SCR_BPP					32
+#define BTN_X					BLOCK_SIZE
+#define BTN_Y(num)				((num*SCR_HEIGHT)/NO_MODES)
+#define BTN_WIDTH				4*BLOCK_SIZE
+#define BTN_HEIGHT				((HEIGHT_BLOCKS*BLOCK_SIZE)/(NO_MODES+1))
+#define LF						1
+#define UP						2
+#define RT						3
+#define DN						4
+#define modeName(n)				((n==0)?"Easy":(n==1)?"Medium":(n==2)?"Hard":(n==3)?"Death":"lol")	//not proper :(
 
-const Uint32 modeColor[NO_MODES]=
+
+const Uint32 modeColor[NO_MODES]=	//Button colors
 	{
 	0x00C800,
 	0x00C8C8,
 	0xFF7F00,
-	0xFF0000
+	0xFF0000,
+	0xFFFFFF
 	};
 
 
@@ -108,19 +114,9 @@ void reset()
 		{
 		for (int i=0; i<NO_MODES; i++)
 			{
-			EZ_apply_rect(screen,
-				EZ_new_rect(BLOCK_SIZE,										// X
-					((HEIGHT_BLOCKS*i)/NO_MODES)*BLOCK_SIZE+(BLOCK_SIZE/2),	// Y
-					(WIDTH_BLOCKS-2)*BLOCK_SIZE,							// W
-					(HEIGHT_BLOCKS)/(NO_MODES+1)*BLOCK_SIZE ),				// H
-				modeColor[i]);		//(NO_MODES+1) has issues, but NO_MODES doesn't look right
+			EZ_apply_rect(screen, EZ_new_rect(BTN_X, BTN_Y(i), BTN_WIDTH, BTN_HEIGHT), modeColor[i]);
 			
-			EZ_apply_text(screen,modeName(i),font,
-				EZ_new_rect(BLOCK_SIZE*WIDTH_BLOCKS/2,						// X
-					((HEIGHT_BLOCKS*i)/NO_MODES)*BLOCK_SIZE+(BLOCK_SIZE/2),	// Y
-					(WIDTH_BLOCKS-2)*BLOCK_SIZE,							// W
-					(HEIGHT_BLOCKS)/(NO_MODES+1)*BLOCK_SIZE ),				// H
-				EZ_Uint32_to_SDL(0x000000));
+			EZ_apply_text(screen,modeName(i),font, EZ_new_rect(BLOCK_SIZE*2,BTN_Y(i)+(BLOCK_SIZE/2),0,0), EZ_Uint32_to_SDL(0x000000));
 			}
 		SDL_Flip(screen);
 		
@@ -128,50 +124,36 @@ void reset()
 			{
 			if (tEvent.type==SDL_MOUSEBUTTONDOWN)
 				{
-				//SDL_WM_SetCaption("clicked out of x bounds", NULL);
-				if (tEvent.button.x>BLOCK_SIZE && tEvent.button.x<(WIDTH_BLOCKS-1)*BLOCK_SIZE)
+				if (tEvent.button.x>BTN_X && tEvent.button.x<BTN_WIDTH+BTN_X)
 					{
-					//SDL_WM_SetCaption("clicked in x bounds", NULL);
-					tClickSelection=-1;
 					for (int i=0; i<=NO_MODES; i++)
 						{
-						if (tEvent.button.y > ((float)((HEIGHT_BLOCKS*i*BLOCK_SIZE)/NO_MODES)+(BLOCK_SIZE/2)) &&
-							tEvent.button.y < ((float)((HEIGHT_BLOCKS*i*BLOCK_SIZE)/NO_MODES)+(BLOCK_SIZE/2)+(HEIGHT_BLOCKS)/(NO_MODES+1)*BLOCK_SIZE))
-							{
+						if ( tEvent.button.y > BTN_Y(i) && tEvent.button.y < BTN_Y(i)+BTN_HEIGHT ) //
 							tClickSelection=i;
-							sprintf(appName,"clicked in x and y bounds: %d",i);
-							//SDL_WM_SetCaption(appName, NULL);
-				}	}	}	}
+						}
+					}
+				}
 			
 			if (tEvent.type==SDL_MOUSEBUTTONUP)
 				{
-				//SDL_WM_SetCaption("released out of x bounds", NULL);
-				if (tEvent.button.x>BLOCK_SIZE && tEvent.button.x<(WIDTH_BLOCKS-1)*BLOCK_SIZE)
+				if (tEvent.button.x>BTN_X && tEvent.button.x<BTN_WIDTH+BTN_X)
 					{
-					//SDL_WM_SetCaption("released in x bounds", NULL);
 					for (int i=0; i<=NO_MODES; i++)
 						{
-						if (tEvent.button.y > ((float)((HEIGHT_BLOCKS*i*BLOCK_SIZE)/NO_MODES)+(BLOCK_SIZE/2)) &&
-							tEvent.button.y < ((float)((HEIGHT_BLOCKS*i*BLOCK_SIZE)/NO_MODES)+(BLOCK_SIZE/2)+(HEIGHT_BLOCKS)/(NO_MODES+1)*BLOCK_SIZE))
+						if ( tEvent.button.y > BTN_Y(i) && tEvent.button.y < BTN_Y(i)+BTN_HEIGHT ) //
 							{
-							//sprintf(appName,"released in different x and y bounds: %d",i);
-							//SDL_WM_SetCaption(appName, NULL);
 							if (tClickSelection==i)
-								{
 								tSelection=i;
-								//sprintf(appName,"released in same x and y bounds: %d",i);
-								//SDL_WM_SetCaption(appName, NULL);
-				}	}	}	}	}
+							}
+						}
+					}
+				}
 			
 			if (tEvent.type==SDL_QUIT)
-				{
 				exit(0);
-				}
 				
 			}
 		}
-	//sprintf(appName,"done: %d",tSelection);
-	//SDL_WM_SetCaption(appName, NULL);
 	
 	switch (tSelection)
 		{
@@ -198,6 +180,12 @@ void reset()
 			startlength=10;
 			speedup=1;
 			delaytime=150;
+			break;
+		default:
+			grow=3;
+			startlength=3;
+			speedup=0.9375;
+			delaytime=250;
 			break;
 		}
 	srand(time(0));
@@ -380,7 +368,7 @@ void gameOver(void)
 
 
 int main(int argc, char *argv[])
-{
+	{
 	int go=set();
 	if (go==0)
 		{
@@ -404,35 +392,17 @@ int main(int argc, char *argv[])
 		}
 	SDL_Quit();
 	return go;
-}
+	}
 
-/*CURRENTLY WORKING ON
-
-line 99
-check y for btn press
-look at lines 81-84 for y vals
-
-
-*/
 
 /* ISSUES - BUGS
+
+does the snake speed up?
+create custom mode?
+
 */
 
-/*
-cin>>selection;
-//...
-else if (selection==5)
-	{
-	cout<<"Start Length = ";
-	cin>>startlength;
-	cout<<"Grow Length  = ";
-	cin>>grow;
-	cout<<"Speed up     = ";
-	cin>>speedup;
-	cout<<"Start Delay  = ";
-	cin>>delaytime;
-	}
-*/
+
 
 /*
 void intro()
