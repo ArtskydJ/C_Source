@@ -45,8 +45,14 @@ const bool blinker[blinkerY][blinkerX]={
 
 void make(int INchoice)
 	{
+	initArea(RSET);
 	switch (INchoice)
 		{
+		case 0:
+			srand(time(0));			//Seed randomizer
+			initArea(RNDM);			//Randomize
+		break;
+		
 		case 1:
 			for (int i=0; i<gliderGunY; i++)
 				for (int j=0; j<gliderGunX; j++)

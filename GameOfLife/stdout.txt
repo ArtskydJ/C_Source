@@ -1,2 +1,2 @@
-loading preset
-wait time=625
+Sucess with screen init
+hi2.0
