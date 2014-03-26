@@ -1,7 +1,7 @@
 //Tetris
 //Joseph Dykstra
 //Port started 07-15-2013
-//Finished ??-??-2013
+//Finished xx-xx-201x
 #include "SDL/SDL.h"
 #include "SDL/SDL_ttf.h"
 #include <stdbool.h>
