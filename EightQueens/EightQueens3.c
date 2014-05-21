@@ -3,7 +3,7 @@
 //	Programmed by Joseph Dykstra, finished 05/11/2012.
 //	Ported to C on 2013-07-16
 //	Compiles with the GNU c99 compiler
-//	gcc -std=c99 -o EightQueens3.exe EightQueens3.c
+//	gcc -std=c99 -o "C:/path/to/EightQueens3.exe" "C:/path/to/EightQueens3.c"
  
 #define FAST		//Skips some debug stream
 //#define DEBUG		//
@@ -15,19 +15,17 @@ int temp=0, board[8][8], makeBool(int);
 
 #ifdef DEBUG
 #include <stdlib.h> //srand, rand
-#include <time.h>	 //randomization
+#include <time.h>   //randomization
 int main() //replaces current main() function
 	{
 	srand(time(0));
-	while (1)
+	while(1)
 		{
 		int curr_col=0;
 		int curr_row=0;
 		for (int a=0; a<8; a++) //randomly generated queens
-			{
 			for (int s=0; s<8; s++)
-				board[a][s]=!makeBool(rand()%20); //about one in 20 are generated, ~3 are generated
-			}
+				board[a][s] = !makeBool(rand()%20); //about one in 20 are generated, ~3 are generated
 		printboard();
 		printf("row:"); //user enters potential position for a queen to be...
 		cin>>curr_row;
@@ -118,26 +116,20 @@ int valid(int INrow,int INcol) //checks if the square is valid
 
 int makeBool(int INval) //takes the int input, and outputs a boolean integer.
 	{
-	if (INval<0) {INval=0;}
-	if (INval>1) {INval=1;}
-	return INval;
+	return (INval<=0) ? 0 : 1;
 	}
 
 void clearboard()
 	{
 	for (int y=0; y<8; y++)
-		{
 		for (int x=0; x<8; x++)
-			{
-			board[x][y]=0;
-			}
-		}
+			board[x][y] = 0;
 	}
 
 void clearcolumn(int INcolumn)
 	{
 	for (int i=0; i<8; i++)
-		board[i][INcolumn]=0;
+		board[i][INcolumn] = 0;
 	}
 
 void printboard()
