@@ -1,21 +1,14 @@
-If a SDL application is shared with someone, give them:
+# C_Source
 
-SDL.dll
+Source code for some projects I have been working on...
 
-==========
-If the application has text in it, also give them:
+### Game Of Life
 
-libfreetype-6.dll
+Graphical John Conway's Game Of Life.
 
-SDL_ttf.dll
+http://en.wikipedia.org/wiki/Conway's_Game_of_Life
 
-zlib1.dll
+### HowTo
 
-==========
-They should put these in the same dir as the .exe file.
+This is a boilerplate for SDL-based-projects.
 
-If they want, they can put them in:
-
-C:\Windows\System32\	(on 32 bit windows)
-
-C:\Windows\SysWOW64\	(on 64 bit windows)
