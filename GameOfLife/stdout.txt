@@ -1,2 +1,0 @@
-Sucess with screen init
-hi2.0
